@@ -3,16 +3,16 @@ proyecto de lambda de 3 capas en aws
 primero creamos en s3 un bucket. dentro del bucket creamos 3 carpetas llamadas:
 
 s3://pruebasilver/
-├── bronze/
-├── silver/
-└── gold/
+  ├── bronze/
+  ├── silver/
+  └── gold/
 
 dentro de la capa bronze debe estar el csv que se irá actualizando y que lambda automatizará:
 
 pruebasilver/
-├── bronze/pacientes_crudo.csv
-├── silver/
-└── gold/
+  ├── bronze/pacientes_crudo.csv
+  ├── silver/
+  └── gold/
 
 creamos otra carpeta llamada scrip y alojamos el archivo .py que se ejecutará en glue.
 
@@ -125,5 +125,6 @@ esperar unos segundos: la función lambda se disparará automáticamente.
 
 revisar en cloudwatch logs → lambda_trigger_glue_athena
 y en aws glue → job runs
+
 
 debería aparecer el mensaje de ejecución exitosa.
