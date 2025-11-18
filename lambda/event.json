@@ -1,0 +1,38 @@
+{
+  "Records": [
+    {
+      "eventVersion": "2.0",
+      "eventSource": "aws:s3",
+      "awsRegion": "us-east-1",
+      "eventTime": "2025-11-06T00:00:00.000Z",
+      "eventName": "ObjectCreated:Put",
+      "userIdentity": {
+        "principalId": "FELIX"
+      },
+      "requestParameters": {
+        "sourceIPAddress": "127.0.0.1"
+      },
+      "responseElements": {
+        "x-amz-request-id": "ABC123456",
+        "x-amz-id-2": "XYZ123456"
+      },
+      "s3": {
+        "s3SchemaVersion": "1.0",
+        "configurationId": "upload-trigger",
+        "bucket": {
+          "name": "pruebasilver",
+          "ownerIdentity": {
+            "principalId": "FELIX"
+          },
+          "arn": "arn:aws:s3:::pruebasilver"
+        },
+        "object": {
+          "key": "bronze/pacientesBronce.csv",
+          "size": 2048,
+          "eTag": "123456789abcdef",
+          "sequencer": "001"
+        }
+      }
+    }
+  ]
+}
