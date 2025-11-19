@@ -1,36 +1,45 @@
 {
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "glue:StartJobRun",
-        "glue:GetJobRun",
-        "glue:GetJobRuns",
-        "glue:BatchStopJobRun"
-      ],
-      "Resource": "*"
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "s3:GetObject",
-        "s3:PutObject",
-        "s3:ListBucket"
-      ],
-      "Resource": [
-        "arn:aws:s3:::pruebasilver",
-        "arn:aws:s3:::pruebasilver/*"
-      ]
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "logs:CreateLogGroup",
-        "logs:CreateLogStream",
-        "logs:PutLogEvents"
-      ],
-      "Resource": "*"
-    }
-  ]
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Effect": "Allow",
+			"Action": [
+				"glue:StartJobRun",
+				"glue:GetJobRun",
+				"glue:GetJobRuns",
+				"glue:GetJob",
+				"glue:BatchStopJobRun"
+			],
+			"Resource": "*"
+		},
+		{
+			"Effect": "Allow",
+			"Action": [
+				"s3:*"
+			],
+			"Resource": "*"
+		},
+		{
+			"Effect": "Allow",
+			"Action": [
+				"logs:*"
+			],
+			"Resource": "*"
+		},
+		{
+			"Effect": "Allow",
+			"Action": [
+				"athena:StartQueryExecution",
+				"athena:GetQueryExecution",
+				"athena:GetQueryResults",
+				"athena:ListQueryExecutions",
+				"glue:CreateDatabase",
+				"glue:CreateTable",
+				"glue:GetDatabase",
+				"glue:GetTable",
+				"glue:GetTables"
+			],
+			"Resource": "*"
+		}
+	]
 }
