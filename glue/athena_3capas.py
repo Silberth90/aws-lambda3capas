@@ -1,10 +1,10 @@
 # ==========================================================
 # athena_3capas.py
-# Script de Glue Spark - ETL 3 Capas (Bronze → Silver → Gold)
-# Autor: Silver García
+# Script de Glue Spark - ETL 3 Capas + Creación automática en Athena
 # ==========================================================
 
 import sys
+import boto3
 from awsglue.context import GlueContext
 from awsglue.utils import getResolvedOptions
 from pyspark.context import SparkContext
@@ -45,7 +45,7 @@ df_bronze = (
     spark.read
     .option("header", True)
     .option("inferSchema", True)
-    .csv(BRONZE_PATH)
+    .csv(f"{BRONZE_PATH}*.csv")
 )
 
 print("Vista previa de los datos crudos (BRONZE):")
@@ -88,10 +88,40 @@ df_gold.write.mode("overwrite").parquet(f"{GOLD_PATH}pacientes_analytics/")
 print("Capa GOLD creada: datos listos para análisis.")
 
 # ==========================================================
-# VERIFICACIÓN FINAL
+# CREACIÓN DE BASE Y TABLA EN ATHENA
 # ==========================================================
-df_check = spark.read.parquet(f"{GOLD_PATH}pacientes_analytics/")
-print("Vista previa de la capa GOLD:")
-df_check.show()
+athena = boto3.client("athena", region_name="us-east-1")
 
+database_name = "athena_3capas"
+table_name = "pacientes_analytics"
+output_location = f"s3://{S3_BUCKET}/athena-results/"
+
+query_create_db = f"""
+CREATE DATABASE IF NOT EXISTS {database_name};
+"""
+
+query_create_table = f"""
+CREATE EXTERNAL TABLE IF NOT EXISTS {database_name}.{table_name} (
+  obra_social STRING,
+  total_pacientes BIGINT,
+  edad_promedio DOUBLE
+)
+STORED AS PARQUET
+LOCATION '{GOLD_PATH}pacientes_analytics/'
+TBLPROPERTIES ("parquet.compression"="SNAPPY");
+"""
+
+print("Creando base y tabla en Athena...")
+
+athena.start_query_execution(
+    QueryString=query_create_db,
+    ResultConfiguration={"OutputLocation": output_location}
+)
+
+athena.start_query_execution(
+    QueryString=query_create_table,
+    ResultConfiguration={"OutputLocation": output_location}
+)
+
+print(f"Base '{database_name}' y tabla '{table_name}' creadas o actualizadas en Athena.")
 print("=== JOB FINALIZADO CORRECTAMENTE ===")
