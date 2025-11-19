@@ -3,41 +3,36 @@ proyecto de lambda de 3 capas en aws
 primero creamos en s3 un bucket. dentro del bucket creamos 3 carpetas llamadas:
 
 s3://pruebasilver/
-
-  ├── bronze/
-  
-  ├── silver/
-  
-  └── gold/
+├── bronze/
+├── silver/
+└── gold/
 
 dentro de la capa bronze debe estar el csv que se irá actualizando y que lambda automatizará:
 
 pruebasilver/
+├── bronze/pacientes_crudo.csv
+├── silver/
+└── gold/
 
-  ├── bronze/pacientes_crudo.csv
-  
-  ├── silver/
-  
-  └── gold/
-
-creamos otra carpeta llamada scrip y alojamos el archivo .py que se ejecutará en glue.
+creamos otra carpeta llamada scrip y alojamos el archivo athena3capas.py que se ejecutará en glue.
 
 luego vamos a iam, creamos el rol con el nombre de la función y le asignamos los permisos:
 
 AWSGlueServiceRole
 AmazonS3FullAccess
 CloudWatchLogsFullAccess
+AmazonAthenaFullAccess
 
 clic en “Add permissions” → “Create inline policy”
 seleccionamos la pestaña JSON y pegamos el contenido del archivo permiso.json.
-clic en “Next” y asignamos el nombre: LambdaGluePolicy.
+clic en “Next” y asignamos el nombre: LambdaGluePolicy
 
 luego vamos a glue y creamos un nuevo job.
 nombre de la función: athenalambda
 tipo: python spark
 
 en script path agregamos la ruta del archivo .py:
-s3://pruebasilver/scrip/athena_3capas.py
+s3://pruebasilver/scrip/
 
 en job parameters agregamos:
 
@@ -56,7 +51,7 @@ vamos a lambda → create function
 nombre del evento: lambda_trigger_glue_athena
 runtime: Python 3.11
 architecture: x86_64
-rol: usar el rol creado con permisos de glue, s3 y cloudwatch.
+rol: usar el rol creado con permisos de glue, s3, cloudwatch y athena.
 
 pegamos el script lambda que vamos a usar del archivo .py
 
@@ -65,6 +60,7 @@ agregamos permisos:
 AWSGlueServiceRole
 CloudWatchLogsFullAccess
 AmazonS3FullAccess
+AmazonAthenaFullAccess
 
 ahora elegimos “Create inline policy”
 en la pestaña JSON agregamos el contenido de permiso.json
@@ -94,7 +90,7 @@ al finalizar, se crearán los datos procesados en silver y gold.
 verificar los logs en cloudwatch (grupo /aws/lambda/lambda_trigger_glue_athena).
 
 flujo completo:
-s3 (bronze) → lambda trigger → glue job (spark) → s3 (silver/gold)
+s3 (bronze) → lambda trigger → glue job (spark) → s3 (silver/gold) → athena
 
 — verificar el trigger de s3
 
@@ -118,11 +114,12 @@ el rol de lambda debe tener estas políticas:
 AWSGlueServiceRole
 AmazonS3FullAccess
 CloudWatchLogsFullAccess
+AmazonAthenaFullAccess
 
 si no las tiene, agregar una inline policy manual:
 entrar al rol que usa lambda (configuration → permissions → role name).
 clic en add permissions → create inline policy → pestaña JSON.
-pegar en el scrip el contenido de permiso.json
+pegar en el script el contenido de permiso.json
 
 — guardar y probar
 
@@ -132,6 +129,9 @@ esperar unos segundos: la función lambda se disparará automáticamente.
 revisar en cloudwatch logs → lambda_trigger_glue_athena
 y en aws glue → job runs
 
-
 debería aparecer el mensaje de ejecución exitosa.
 
+— creación automática en athena
+
+al finalizar el job de glue, se ejecuta automáticamente la creación de la base de datos y la tabla en amazon athena usando boto3.
+en el script athena3capas.py, se incluye el bloque de código que crea la base athena_3capas y la tabla pacientes_analytics, apuntando a la capa gold
